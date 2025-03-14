@@ -123,7 +123,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 Contributions are welcome! If you find any bugs or have suggestions for new features, please open an issue or submit a pull request.
 
 ## Contact
-For any questions or feedback, feel free to contact me at [your-email@example.com].
+For any questions or feedback, feel free to contact me at [ashishofficial231@gmail.com].
 
 ---
 
