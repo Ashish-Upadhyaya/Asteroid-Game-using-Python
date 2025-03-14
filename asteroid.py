@@ -352,4 +352,5 @@ while True:
     if not game_over:
         game_logic()
     update_screen()
-    logger.debug('Game loop iteration')
+    logger.debug('Game loop iteration')logger.info('Game started')
+logger.debug('Game loop started')
