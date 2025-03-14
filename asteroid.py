@@ -230,4 +230,126 @@ while True:
     handle_input()
     if not game_over:
         game_logic()
+    update_screen()import logging
+
+# Create a logger
+logger = logging.getLogger('asteroids_game')
+logger.setLevel(logging.DEBUG)
+
+# Create a file handler and a stream handler
+file_handler = logging.FileHandler('asteroids_game.log')
+stream_handler = logging.StreamHandler()
+
+# Create a formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+stream_handler.setFormatter(formatter)
+
+# Add the handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+
+# ...
+
+def handle_input():
+    global ship_angle, ship_is_rotating, ship_direction
+    global ship_x, ship_y, ship_speed, ship_is_forward
+    global bullet_x, bullet_y, bullet_angle, no_bullets
+    global thruster_sound, missile_sound
+
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            logger.info('Game quit')
+            pygame.quit()
+            sys.exit()   
+        elif event.type == KEYDOWN:
+            if event.key == K_RIGHT:
+                logger.debug('Right arrow key pressed')
+                ship_is_rotating = True
+                ship_direction = 0
+            elif event.key == K_LEFT:
+                logger.debug('Left arrow key pressed')
+                ship_is_rotating = True
+                ship_direction = 1
+            elif event.key == K_UP:
+                logger.debug('Up arrow key pressed')
+                ship_is_forward = True
+                ship_speed = 10
+                thruster_sound.play()
+            elif event.key == K_SPACE:
+                logger.debug('Space bar pressed')
+                bullet_x.append( ship_x + 50 )
+                bullet_y.append( ship_y + 50 )
+                bullet_angle.append( ship_angle )
+                no_bullets = no_bullets + 1
+                missile_sound.play()
+
+        elif event.type == KEYUP:
+            if event.key == K_LEFT or event.key == K_RIGHT:
+                logger.debug('Rotation stopped')
+                ship_is_rotating = False
+            else:
+                logger.debug('Forward motion stopped')
+                ship_is_forward = False
+                thruster_sound.stop()
+
+    if ship_is_rotating:
+        if ship_direction == 0:
+            ship_angle = ship_angle - 10    
+        else:
+            ship_angle = ship_angle + 10        
+
+    if ship_is_forward or ship_speed > 0:
+        ship_x = (ship_x + math.cos(math.radians(ship_angle))*ship_speed )
+        ship_y = (ship_y + -math.sin(math.radians(ship_angle))*ship_speed )
+        if ship_is_forward == False:
+            ship_speed = ship_speed - 0.2
+
+def game_logic():
+   global bullet_x, bullet_y, bullet_angle, no_bullets
+   global asteroid_x, asteroid_y
+   global score
+   global game_over
+
+   for i in range(0, no_bullets):
+       bullet_x[i] = (bullet_x[i] + math.cos(math.radians(bullet_angle[i]))*10 )
+       bullet_y[i] = (bullet_y[i] + -math.sin(math.radians(bullet_angle[i]))*10 )
+
+   for i in range(0,no_asteroids):
+        asteroid_x[i] = (asteroid_x[i] + math.cos(math.radians(asteroid_angle[i]))*asteroid_speed )
+        asteroid_y[i] = (asteroid_y[i] + -math.sin(math.radians(asteroid_angle[i]))*asteroid_speed )    
+
+        if asteroid_y[i] < 0:
+            asteroid_y[i] = HEIGHT
+
+        if asteroid_y[i] > HEIGHT:
+            asteroid_y[i] = 0
+
+        if asteroid_x[i] < 0:
+            asteroid_x[i] = WIDTH
+
+        if asteroid_x[i] > WIDTH:
+            asteroid_x[i] = 0
+
+        if isCollision(ship_x, ship_y, asteroid_x[i], asteroid_y[i], 27):
+            logger.error('Game over: collision with asteroid')
+            game_over = True
+
+   for i in range(0, no_bullets):
+        for j in range(0, no_asteroids):
+            if isCollision(bullet_x[i], bullet_y[i], asteroid_x[j], asteroid_y[j], 50):
+               asteroid_x[j] = ( random.randint(0,WIDTH) )
+               asteroid_y[j] = ( random.randint(0,HEIGHT) )
+               asteroid_angle[j] = ( random.randint(0,365) )
+               explosion_sound.play()
+               logger.info('Asteroid destroyed')
+               score = score + 1
+
+# asteroids game loop
+while True:
+    draw(window)
+    handle_input()
+    if not game_over:
+        game_logic()
     update_screen()
+    logger.debug('Game loop iteration')
